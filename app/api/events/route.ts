@@ -3,6 +3,9 @@ import { createEventSchema } from '@/app/lib/validations/event'
 import { NextRequest, NextResponse } from 'next/server'
 import { createEvent, getAllEvents } from '@/app/lib/services/event-service'
 
+// Force Node.js runtime - Drizzle + Postgres does not work on Edge
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

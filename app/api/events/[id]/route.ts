@@ -7,6 +7,9 @@ import {
 } from '@/app/lib/services/event-service'
 import { updateEventSchema } from '@/app/lib/validations/event'
 
+// Force Node.js runtime - Drizzle + Postgres does not work on Edge
+export const runtime = 'nodejs'
+
 type RouteParams = {
   params: Promise<{ id: string }>
 }

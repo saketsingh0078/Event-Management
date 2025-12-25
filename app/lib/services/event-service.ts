@@ -89,10 +89,36 @@ export async function getAllEvents(
       total: Number(totalResult[0]?.count) || 0,
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes('does not exist')) {
-      throw new Error(
-        `Database table 'events' does not exist. Please run: npm run db:push to create the table. Original error: ${error.message}`,
-      )
+    if (error instanceof Error) {
+      const errorMsg = error.message.toLowerCase()
+      
+      // Check for missing table
+      if (errorMsg.includes('does not exist') && errorMsg.includes('table')) {
+        throw new Error(
+          `Database table 'events' does not exist. Please run migrations: npm run db:migrate. Original error: ${error.message}`,
+        )
+      }
+      
+      // Check for missing column (e.g., created_at)
+      if (errorMsg.includes('does not exist') && errorMsg.includes('column')) {
+        throw new Error(
+          `Database column missing. This usually means migrations haven't been applied to production. ` +
+          `Please run: DATABASE_URL=your_production_url npm run db:migrate. ` +
+          `Original error: ${error.message}`,
+        )
+      }
+      
+      // Check for connection issues
+      if (
+        errorMsg.includes('database_url') ||
+        errorMsg.includes('connection') ||
+        errorMsg.includes('connect')
+      ) {
+        throw new Error(
+          `Database connection failed. Please check your DATABASE_URL environment variable. ` +
+          `Original error: ${error.message}`,
+        )
+      }
     }
     throw error
   }
