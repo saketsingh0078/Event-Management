@@ -97,7 +97,10 @@ export async function getAllEvents(
       // Check for missing table
       if (errorMsg.includes('does not exist') && errorMsg.includes('table')) {
         throw new Error(
-          `Database table 'events' does not exist. Please run migrations: npm run db:migrate. Original error: ${error.message}`,
+          `Database table 'events' does not exist. Please run migrations in production. ` +
+          `For Vercel: Add a build command or run migrations manually: ` +
+          `DATABASE_URL=your_production_url npm run db:migrate. ` +
+          `Original error: ${error.message}`,
         )
       }
       
@@ -114,10 +117,30 @@ export async function getAllEvents(
       if (
         errorMsg.includes('database_url') ||
         errorMsg.includes('connection') ||
-        errorMsg.includes('connect')
+        errorMsg.includes('connect') ||
+        errorMsg.includes('timeout') ||
+        errorMsg.includes('etimedout') ||
+        errorMsg.includes('ssl') ||
+        errorMsg.includes('certificate')
       ) {
         throw new Error(
-          `Database connection failed. Please check your DATABASE_URL environment variable. ` +
+          `Database connection failed. Please check: ` +
+          `1) DATABASE_URL environment variable is set in Vercel, ` +
+          `2) Database server is accessible, ` +
+          `3) SSL is properly configured (if required), ` +
+          `4) Network/firewall allows connections. ` +
+          `Original error: ${error.message}`,
+        )
+      }
+      
+      // Check for permission issues
+      if (
+        errorMsg.includes('permission') ||
+        errorMsg.includes('access denied') ||
+        errorMsg.includes('authentication')
+      ) {
+        throw new Error(
+          `Database authentication failed. Please verify your DATABASE_URL credentials. ` +
           `Original error: ${error.message}`,
         )
       }

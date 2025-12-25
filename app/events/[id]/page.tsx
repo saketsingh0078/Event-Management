@@ -3,10 +3,11 @@
 import { use, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEvent } from '../../hooks/use-events';
+import { useEvent, useDeleteEvent } from '../../hooks/use-events';
 import { formatEventDate } from '../../utils/date';
 import EventCard from '@/app/components/event-card';
 import { EventDetailShimmer } from '@/app/components/event-detail-shimmer';
+import { CreateEventModal } from '@/app/components/create-event-modal';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -17,12 +18,14 @@ export default function EventDetailPage({ params }: PageProps) {
   const router = useRouter();
   const eventId = parseInt(id, 10);
   const { data: event, isLoading, error } = useEvent(eventId);
+  const deleteEvent = useDeleteEvent();
   const [imageError, setImageError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [organizerLogoError, setOrganizerLogoError] = useState(false);
   const [teamLogoErrors, setTeamLogoErrors] = useState<Record<number, boolean>>(
     {},
   );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (isLoading) {
     return <EventDetailShimmer />;
@@ -84,6 +87,26 @@ export default function EventDetailPage({ params }: PageProps) {
     return `${startFormatted} - ${endFormatted} (${event.timezone || 'GMT-6'})`;
   };
 
+  const handleDelete = async () => {
+    if (
+      confirm(
+        `Are you sure you want to delete "${event.name}"? This action cannot be undone.`,
+      )
+    ) {
+      try {
+        await deleteEvent.mutateAsync(event.id);
+        router.push('/events');
+      } catch (error) {
+        console.error('Failed to delete event:', error);
+        alert('Failed to delete event. Please try again.');
+      }
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditModalOpen(true);
+  };
+
   return (
     <div className="w-full py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex gap-6 flex-col">
@@ -132,13 +155,25 @@ export default function EventDetailPage({ params }: PageProps) {
                 ></div>
                 {getStatusLabel(event?.status)}
               </span>
-              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
-                <Image src="/edit.svg" alt="Delete" width={20} height={20} />
+              <button
+                onClick={handleEdit}
+                className="px-4 cursor-pointer  py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit hover:bg-gray-700/50 transition-colors"
+              >
+                <Image src="/edit.svg" alt="Edit" width={20} height={20} />
               </button>
-              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
-                <Image src="/disable.svg" alt="Delete" width={20} height={20} />
+              <button className="px-4  py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit hover:bg-gray-700/50 transition-colors">
+                <Image
+                  src="/disable.svg"
+                  alt="Disable"
+                  width={20}
+                  height={20}
+                />
               </button>
-              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
+              <button
+                onClick={handleDelete}
+                disabled={deleteEvent.isPending}
+                className="px-4 cursor-pointer py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <Image src="/delete.svg" alt="Delete" width={20} height={20} />
               </button>
             </div>
@@ -458,6 +493,13 @@ export default function EventDetailPage({ params }: PageProps) {
 
         {/* Event Summary Sidebar */}
       </div>
+
+      {/* Edit Event Modal */}
+      <CreateEventModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        event={event}
+      />
     </div>
   );
 }
