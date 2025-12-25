@@ -270,7 +270,7 @@ const EventsPage = () => {
               <button
                 key={range}
                 onClick={() => handleDateRangeChange(range)}
-                className={`px-4 py-2 rounded-md text-sm font-medium  transition-colors ${
+                className={`px-4 cursor-pointer py-2 rounded-md text-sm font-medium  transition-colors ${
                   selectedRange === range
                     ? 'bg-gray-700 text-white'
                     : 'text-gray-400 hover:text-gray-300'
