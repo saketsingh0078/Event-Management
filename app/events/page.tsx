@@ -371,7 +371,7 @@ const EventsPage = () => {
                   >
                     Filter
                     <Image
-                      src="/down-arrow.svg"
+                      src="/down.svg"
                       alt="Filter"
                       width={16}
                       height={16}
@@ -382,7 +382,12 @@ const EventsPage = () => {
 
                 {/* Upload Icon */}
                 <button className="p-2 rounded-lg bg-gray-800/50 border border-[#343A44] hover:bg-gray-700/50 transition-colors">
-                  <Image src="/file.svg" alt="Upload" width={20} height={20} />
+                  <Image
+                    src="/upload.svg"
+                    alt="Upload"
+                    width={20}
+                    height={20}
+                  />
                 </button>
 
                 {/* Create Event Button */}

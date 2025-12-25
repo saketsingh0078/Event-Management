@@ -28,6 +28,7 @@ export const events = pgTable('events', {
   teams: jsonb('teams'), // Array of team objects
   tags: jsonb('tags'), // Array of tag strings
   timezone: varchar('timezone', { length: 100 }).default('GMT-6'),
+  nftMintAddress: varchar('nft_mint_address', { length: 255 }), // Solana NFT mint address
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })

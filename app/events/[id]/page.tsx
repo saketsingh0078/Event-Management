@@ -110,7 +110,7 @@ export default function EventDetailPage({ params }: PageProps) {
   return (
     <div className="w-full py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex gap-6 flex-col">
-        <div className="flex gap-6">
+        <div className="flex gap-6 flex-col lg:flex-row">
           <div
             className="flex-1 p-5 rounded-xl  bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(68.68%_83.22%_at_50%_100%,rgba(0,133,254,0.2)_0%,rgba(0,133,254,0)_100%)]
              border border-solid border-[#343A44] backdrop-blur-[50px]"
@@ -180,7 +180,7 @@ export default function EventDetailPage({ params }: PageProps) {
             <div className="text-gray-400 text-base mt-6">
               {event?.description}
             </div>
-            <div className="flex justify-between items-center gap-4 mt-2">
+            <div className="flex justify-between items-center gap-4 mt-2 ">
               <div className="space-y-4 border-b border-gray-700 p-4 bg-gray-700/50 rounded-lg flex-1">
                 <div className="flex items-center gap-3">
                   <Image
@@ -252,10 +252,62 @@ export default function EventDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                 )}
+                {event.nftMintAddress && (
+                  <div className="px-4 py-2  from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg flex flex-col gap-2">
+                    <span className="text-purple-300 text-sm font-medium">
+                      NFT Certificate
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="text-purple-400"
+                      >
+                        <path
+                          d="M12 2L2 7L12 12L22 7L12 2Z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 17L12 22L22 17"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 12L12 17L22 12"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <a
+                        href={`https://solscan.io/token/${event.nftMintAddress}?cluster=devnet`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-300 text-sm hover:text-purple-200 underline truncate max-w-[200px]"
+                        title={event.nftMintAddress}
+                      >
+                        {event.nftMintAddress.slice(0, 8)}...
+                        {event.nftMintAddress.slice(-8)}
+                      </a>
+                    </div>
+                    <p className="text-gray-400 text-xs mt-1">
+                      View on Solscan (Devnet)
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          <div className="w-full lg:w-[222px] shrink-0">
+          <div className="w-full shrink-0 lg:w-[222px]">
             {/* Event Summary */}
             <div
               className=" relative p-5 rounded-xl transition-all duration-300 ease-out bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(68.68%_83.22%_at_50%_100%,rgba(0,133,254,0.2)_0%,rgba(0,133,254,0)_100%)] 

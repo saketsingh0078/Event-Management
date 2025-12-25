@@ -2,10 +2,13 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useWallet } from '../hooks/use-wallet';
 
 export const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { wallet, connect, disconnect, isConnecting, isPhantomInstalled } =
+    useWallet();
 
   // Check if we're on an event details page
   const isEventDetailsPage =
@@ -43,6 +46,89 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Solana Wallet Connect Button */}
+            {wallet.connected ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-purple-300 text-sm font-medium">
+                  {wallet.publicKey?.toString().slice(0, 4)}...
+                  {wallet.publicKey?.toString().slice(-4)}
+                </span>
+                <button
+                  onClick={disconnect}
+                  className="text-purple-300 hover:text-purple-200 text-xs ml-2"
+                  title="Disconnect wallet"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={connect}
+                disabled={isConnecting}
+                className="px-4 cursor-pointer py-2  bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isConnecting ? (
+                  <>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 2L2 7L12 12L22 7L12 2Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M2 17L12 22L22 17"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M2 12L12 17L22 12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isPhantomInstalled ? 'Connect Wallet' : 'Install Phantom'}
+                  </>
+                )}
+              </button>
+            )}
+
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Image src="/search.svg" alt="Search" width={20} height={20} />

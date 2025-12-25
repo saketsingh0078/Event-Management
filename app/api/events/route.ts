@@ -1,7 +1,8 @@
 import { successResponse, errorResponse } from '@/app/lib/api-response'
 import { createEventSchema } from '@/app/lib/validations/event'
 import { NextRequest, NextResponse } from 'next/server'
-import { createEvent, getAllEvents } from '@/app/lib/services/event-service'
+import { createEvent, getAllEvents, updateEvent } from '@/app/lib/services/event-service'
+import { mintEventNFT } from '@/app/lib/services/nft-service'
 
 // Force Node.js runtime - Drizzle + Postgres does not work on Edge
 export const runtime = 'nodejs'
@@ -31,7 +32,24 @@ export async function POST(request: NextRequest) {
       teams: validatedData.teams ? JSON.stringify(validatedData.teams) : null,
       tags: validatedData.tags ? JSON.stringify(validatedData.tags) : null,
       timezone: validatedData.timezone,
+      nftMintAddress: null, 
     })
+
+    try {
+      const nftMintAddress = await mintEventNFT({
+        eventName: validatedData.name,
+        eventDescription: validatedData.description || undefined,
+        eventImageUrl: validatedData.imageUrl || undefined,
+      })
+
+      // Update event with NFT mint address
+      if (nftMintAddress) {
+        await updateEvent(event.id, { nftMintAddress })
+        event.nftMintAddress = nftMintAddress
+      }
+    } catch (nftError) {
+      console.error('Failed to mint NFT for event:', nftError)
+    }
 
     return NextResponse.json(successResponse(event), { status: 201 })
   } catch (error) {

@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "nft_mint_address" varchar(255);
