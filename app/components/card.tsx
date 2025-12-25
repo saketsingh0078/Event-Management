@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import Image from 'next/image'
-import { ReactNode } from 'react'
-import { formatNumber } from '../utils/number'
+import Image from 'next/image';
+import { ReactNode } from 'react';
+import { formatNumber } from '../utils/number';
 
 type StatCardProps = {
-  icon: ReactNode
-  title: string
-  value: string | number
-  change?: number
-  changeLabel?: string
-  isPositive?: boolean
-}
+  icon: ReactNode;
+  title: string;
+  value: string | number;
+  change?: number;
+  changeLabel?: string;
+  isPositive?: boolean;
+};
 
 export const StatCard = ({
   icon,
@@ -63,7 +63,7 @@ export const StatCard = ({
         <div className="mb-4">
           <p className="text-white text-4xl font-bold">
             {/* {typeof value === "number" ? value.toLocaleString() : value} */}
-            {formatNumber(1200)}
+            {formatNumber(value as number)}
           </p>
         </div>
 
@@ -99,5 +99,5 @@ export const StatCard = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

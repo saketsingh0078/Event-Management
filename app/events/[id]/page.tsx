@@ -1,31 +1,31 @@
-'use client'
+'use client';
 
-import { use } from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { useEvent } from '../../hooks/use-events'
-import { formatEventDate } from '../../utils/date'
-import { formatNumber } from '../../utils/number'
-import EventCard from '@/app/components/event-card'
+import { use, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEvent } from '../../hooks/use-events';
+import { formatEventDate } from '../../utils/date';
+import EventCard from '@/app/components/event-card';
+import { EventDetailShimmer } from '@/app/components/event-detail-shimmer';
 
 type PageProps = {
-  params: Promise<{ id: string }>
-}
+  params: Promise<{ id: string }>;
+};
 
 export default function EventDetailPage({ params }: PageProps) {
-  const { id } = use(params)
-  const router = useRouter()
-  const eventId = parseInt(id, 10)
-  const { data: event, isLoading, error } = useEvent(eventId)
+  const { id } = use(params);
+  const router = useRouter();
+  const eventId = parseInt(id, 10);
+  const { data: event, isLoading, error } = useEvent(eventId);
+  const [imageError, setImageError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [organizerLogoError, setOrganizerLogoError] = useState(false);
+  const [teamLogoErrors, setTeamLogoErrors] = useState<Record<number, boolean>>(
+    {},
+  );
 
   if (isLoading) {
-    return (
-      <div className="w-full py-4 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-gray-400">Loading event details...</div>
-        </div>
-      </div>
-    )
+    return <EventDetailShimmer />;
   }
 
   if (error || !event) {
@@ -35,144 +35,138 @@ export default function EventDetailPage({ params }: PageProps) {
           <div className="text-red-400">Event not found</div>
         </div>
       </div>
-    )
+    );
   }
 
   const teams = event.teams
     ? typeof event.teams === 'string'
       ? JSON.parse(event.teams)
       : event.teams
-    : []
+    : [];
   const tags = event.tags
     ? typeof event.tags === 'string'
       ? JSON.parse(event.tags)
       : event.tags
-    : []
+    : [];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'upcoming':
-        return 'bg-green-500'
+        return 'bg-green-500';
       case 'cancelled':
-        return 'bg-red-500'
+        return 'bg-red-500';
       case 'completed':
-        return 'bg-gray-500'
+        return 'bg-gray-500';
       case 'ongoing':
-        return 'bg-blue-500'
+        return 'bg-blue-500';
       case 'draft':
-        return 'bg-gray-400'
+        return 'bg-gray-400';
       default:
-        return 'bg-gray-500'
+        return 'bg-gray-500';
     }
-  }
+  };
 
   const getStatusLabel = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1)
-  }
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   const formatDateRange = (
     startDate: Date | string,
     endDate: Date | string,
   ) => {
     const start =
-      typeof startDate === 'string' ? new Date(startDate) : startDate
-    const end = typeof endDate === 'string' ? new Date(endDate) : endDate
+      typeof startDate === 'string' ? new Date(startDate) : startDate;
+    const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
 
-    const startFormatted = formatEventDate(start)
-    const endFormatted = formatEventDate(end)
+    const startFormatted = formatEventDate(start);
+    const endFormatted = formatEventDate(end);
 
-    return `${startFormatted} - ${endFormatted} (${event.timezone || 'GMT-6'})`
-  }
+    return `${startFormatted} - ${endFormatted} (${event.timezone || 'GMT-6'})`;
+  };
 
   return (
-    <div className="w-full py-4 px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex gap-6 flex-col">
         <div className="flex gap-6">
           <div
             className="flex-1 p-5 rounded-xl  bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(68.68%_83.22%_at_50%_100%,rgba(0,133,254,0.2)_0%,rgba(0,133,254,0)_100%)]
              border border-solid border-[#343A44] backdrop-blur-[50px]"
           >
-            {true && (
-              <div className="relative w-[60%] h-64 rounded-lg overflow-hidden">
-                <Image
-                  src={'/event-image.svg'}
-                  alt={event.name}
-                  width={1200}
-                  height={256}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+            <div className="relative w-[60%] h-64 rounded-lg overflow-hidden">
+              <Image
+                src={
+                  event.imageUrl && !imageError
+                    ? event.imageUrl
+                    : '/event-image.svg'
+                }
+                alt={event.name}
+                width={1200}
+                height={256}
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            </div>
             <div className="absolute top-[35%] left-[2%] w-30 h-30 border-8 rounded-full border-[#1E232A]/90 overflow-hidden flex items-center justify-center ">
-              {true ? (
-                <Image
-                  src={'/event-logo.svg'}
-                  alt={event.name}
-                  width={150}
-                  height={150}
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-white text-xl font-semibold">
-                  {event?.name?.charAt(0).toUpperCase()}
-                </span>
-              )}
+              <Image
+                src={
+                  event.logoUrl && !logoError
+                    ? event.logoUrl
+                    : '/event-logo.svg'
+                }
+                alt={event.name}
+                width={150}
+                height={150}
+                className="object-cover"
+                onError={() => setLogoError(true)}
+              />
             </div>
             <div className="flex gap-2 mt-2">
               <h1 className="ml-35 text-white text-2xl font-semibold w-[35%] overflow-hidden text-ellipsis line-clamp-2">
                 {event?.name}
               </h1>
-              <span>{event?.status}</span>
-              <button className="px-4 py-2 bg-gray-700/50 rounded-lg text-white text-sm w-fit h-fit">
+              <span className="bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit px-2 py-1 flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${getStatusColor(
+                    event?.status,
+                  )}`}
+                ></div>
+                {getStatusLabel(event?.status)}
+              </span>
+              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
                 <Image src="/edit.svg" alt="Delete" width={20} height={20} />
               </button>
-              <button className="px-4 py-2 bg-gray-700/50 rounded-lg text-white text-sm w-fit h-fit">
+              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
                 <Image src="/disable.svg" alt="Delete" width={20} height={20} />
               </button>
-              <button className="px-4 py-2 bg-gray-700/50 rounded-lg text-white text-sm w-fit h-fit">
+              <button className="px-4 py-2 bg-[linear-gradient(91.18deg,rgba(255,255,255,0.1)_2.64%,rgba(255,255,255,0.05)_95.85%)] rounded-lg text-white text-sm w-fit h-fit">
                 <Image src="/delete.svg" alt="Delete" width={20} height={20} />
               </button>
             </div>
-            <div className="text-gray-400 text-sm mt-6">
+            <div className="text-gray-400 text-base mt-6">
               {event?.description}
             </div>
             <div className="flex justify-between items-center gap-4 mt-2">
               <div className="space-y-4 border-b border-gray-700 p-4 bg-gray-700/50 rounded-lg flex-1">
                 <div className="flex items-center gap-3">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <Image
+                    src="/timeline.svg"
+                    alt="Timeline"
+                    width={24}
+                    height={24}
                     className="text-gray-400"
-                  >
-                    <path
-                      d="M6 2V6M14 2V6M3 10H17M5 4H15C16.1046 4 17 4.89543 17 6V16C17 17.1046 16.1046 18 15 18H5C3.89543 18 3 17.1046 3 16V6C3 4.89543 3.89543 4 5 4Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  />
                   <span className="text-white">
                     {formatDateRange(event.startDate, event.endDate)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <Image
+                    src="/group.svg"
+                    alt="Category"
+                    width={24}
+                    height={24}
                     className="text-gray-400"
-                  >
-                    <path
-                      d="M10 2C7.79086 2 6 3.79086 6 6C6 8.20914 7.79086 10 10 10C12.2091 10 14 8.20914 14 6C14 3.79086 12.2091 2 10 2ZM10 12C6.68629 12 4 13.7909 4 16V18H16V16C16 13.7909 13.3137 12 10 12Z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                  />
                   <span className="text-white">
                     {event.category && event.subCategory
                       ? `${event.category}, ${event.subCategory}`
@@ -182,24 +176,13 @@ export default function EventDetailPage({ params }: PageProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <Image
+                    src="/location.svg"
+                    alt="Location"
+                    width={24}
+                    height={24}
                     className="text-gray-400"
-                  >
-                    <path
-                      d="M10 10C11.3807 10 12.5 8.88071 12.5 7.5C12.5 6.11929 11.3807 5 10 5C8.61929 5 7.5 6.11929 7.5 7.5C7.5 8.88071 8.61929 10 10 10Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                  </svg>
+                  />
                   <span className="text-white">{event.location}</span>
                 </div>
               </div>
@@ -216,15 +199,18 @@ export default function EventDetailPage({ params }: PageProps) {
                   <div className="px-4 py-2 bg-gray-700/50 rounded-lg flex flex-col gap-2">
                     <span className="text-gray-400 text-sm">Organizer</span>
                     <div className="flex items-center gap-2">
-                      {event.organizerLogo && (
-                        <Image
-                          src={'/event-logo.svg'}
-                          alt={event.organizer}
-                          width={20}
-                          height={20}
-                          className="rounded"
-                        />
-                      )}
+                      <Image
+                        src={
+                          event.organizerLogo && !organizerLogoError
+                            ? event.organizerLogo
+                            : '/event-logo.svg'
+                        }
+                        alt={event.organizer}
+                        width={20}
+                        height={20}
+                        className="rounded-full"
+                        onError={() => setOrganizerLogoError(true)}
+                      />
                       <span className="text-white text-sm">
                         {event.organizer}
                       </span>
@@ -261,20 +247,20 @@ export default function EventDetailPage({ params }: PageProps) {
                   <EventCard
                     icon="/ticket.svg"
                     title="Total Tickets Sold"
-                    value="2,000"
+                    value={event.ticketsSold?.toString() || '0'}
                   />
                   {/* Total Revenue Card */}
                   <EventCard
                     icon="/revenue.svg"
                     title="Total Revenue"
-                    value="2,000"
+                    value={event.totalRevenue?.toString() || '0'}
                   />
 
                   {/* Unique Attendees Card */}
                   <EventCard
                     icon="/unique.svg"
                     title="Unique Attendees"
-                    value="1,398"
+                    value={event.uniqueAttendees?.toString() || '0'}
                   />
                 </div>
 
@@ -330,7 +316,7 @@ export default function EventDetailPage({ params }: PageProps) {
           {/* Teams Section */}
           <div className="flex gap-4">
             {teams.length > 0 && (
-              <div className="bg-gray-800/50 border w-[400px] border-[#343A44] rounded-lg p-6 mb-6">
+              <div className="bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(59.96%_88.85%_at_100%_99.92%,rgba(0,133,254,0.1)_0%,rgba(0,133,254,0)_100%)] border w-[400px] border-[#343A44] rounded-lg p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-white text-lg font-semibold">Teams</h2>
                   <button className="text-blue-400 hover:text-blue-300 text-sm">
@@ -340,15 +326,23 @@ export default function EventDetailPage({ params }: PageProps) {
                 <div className="flex flex-col gap-4">
                   {teams.map((team: any, index: number) => (
                     <div key={index} className="flex  items-center gap-2">
-                      {team.logo && (
-                        <Image
-                          src={'/event-logo.svg'}
-                          alt={team.name || 'Team'}
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                      )}
+                      <Image
+                        src={
+                          team.logo && !teamLogoErrors[index]
+                            ? team.logo
+                            : '/event-logo.svg'
+                        }
+                        alt={team.name || 'Team'}
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                        onError={() =>
+                          setTeamLogoErrors((prev) => ({
+                            ...prev,
+                            [index]: true,
+                          }))
+                        }
+                      />
                       <span className="text-white">{team.name || 'Team'}</span>
                     </div>
                   ))}
@@ -357,24 +351,24 @@ export default function EventDetailPage({ params }: PageProps) {
             )}
 
             {tags.length > 0 && (
-              <div className="bg-gray-800/50 border flex-1 border-[#343A44] rounded-lg p-6 mb-6">
+              <div className="bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(59.96%_88.85%_at_100%_99.92%,rgba(0,133,254,0.1)_0%,rgba(0,133,254,0)_100%)] border flex-1 border-[#343A44] rounded-lg p-6 mb-6">
                 <h2 className="text-white text-lg font-semibold mb-4">Tags</h2>
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag: string, index: number) => {
                     const colors = [
-                      'bg-red-500/20 text-red-400',
-                      'bg-green-500/20 text-green-400',
-                      'bg-purple-500/20 text-purple-400',
-                      'bg-orange-500/20 text-orange-400',
-                      'bg-blue-500/20 text-blue-400',
-                      'bg-cyan-500/20 text-cyan-400',
-                      'bg-emerald-500/20 text-emerald-400',
-                      'bg-teal-500/20 text-teal-400',
-                      'bg-pink-500/20 text-pink-400',
-                    ]
+                      'bg-red-500/20 bg-[linear-gradient(91.18deg,rgba(241,81,80,0.1)_2.64%,rgba(241,81,80,0.05)_95.85%)]',
+                      'bg-green-500/20 bg-[linear-gradient(91.18deg,rgba(47,193,109,0.1)_2.64%,rgba(47,193,109,0.05)_95.85%)]',
+                      'bg-purple-500/20 bg-[linear-gradient(91.18deg,rgba(118,67,205,0.1)_2.64%,rgba(118,67,205,0.05)_95.85%)]',
+                      'bg-orange-500/20 bg-[linear-gradient(91.18deg,rgba(252,142,10,0.1)_2.64%,rgba(252,142,10,0.05)_95.85%)]',
+                      'bg-blue-500/20 bg-[linear-gradient(91.18deg,rgba(0,181,212,0.1)_2.64%,rgba(0,181,212,0.05)_95.85%)]',
+                      'bg-cyan-500/20 bg-[linear-gradient(91.18deg,rgba(0,133,254,0.1)_2.64%,rgba(0,133,254,0.05)_95.85%)]',
+                      'bg-emerald-500/20 bg-[linear-gradient(91.18deg,rgba(216,166,72,0.1)_2.64%,rgba(216,166,72,0.05)_95.85%)]',
+                      'bg-teal-500/20 bg-[linear-gradient(91.18deg,rgba(116,170,80,0.1)_2.64%,rgba(116,170,80,0.05)_95.85%)]',
+                      'bg-pink-500/20 bg-[linear-gradient(91.18deg,rgba(215,91,143,0.1)_2.64%,rgba(215,91,143,0.05)_95.85%)]',
+                    ];
                     const colorClass =
                       colors[index % colors.length] ||
-                      'bg-gray-500/20 text-gray-400'
+                      'bg-gray-500/20 text-gray-400';
                     return (
                       <span
                         key={index}
@@ -382,7 +376,7 @@ export default function EventDetailPage({ params }: PageProps) {
                       >
                         {tag}
                       </span>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -390,28 +384,30 @@ export default function EventDetailPage({ params }: PageProps) {
           </div>
 
           {/* Tabbed Interface */}
-          <div className="bg-gray-800/50 border border-[#343A44] rounded-lg">
-            {/* Tabs */}
-            <div className="border-b border-[#343A44]">
-              <div className="flex gap-1 px-4">
-                {[
-                  'Ticket Collections',
-                  'Ticket Categories',
-                  'Attendee List',
-                  'Promotions / Discounts',
-                  'Seat chart',
-                ].map((tab, index) => (
-                  <button
-                    key={tab}
-                    className={`px-4 py-3 text-sm font-medium transition-colors ${
-                      index === 0
-                        ? 'text-white border-b-2 border-blue-500'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
+          <div className="bg-[radial-gradient(111.15%_100%_at_49.9%_0%,rgba(198,225,255,0.08)_0%,rgba(198,225,255,0.04)_100%),radial-gradient(69.98%_541.77%_at_100%_0%,rgba(35,98,201,0.06)_0%,rgba(35,98,201,0)_100%)] border border-[#343A44] rounded-lg p-6">
+            <div className="bg-gray-800/50 border border-[#343A44] rounded-lg">
+              {/* Tabs */}
+              <div className="px-4 py-2">
+                <div className="flex gap-1">
+                  {[
+                    'Ticket Collections',
+                    'Ticket Categories',
+                    'Attendee List',
+                    'Promotions / Discounts',
+                    'Seat chart',
+                  ].map((tab, index) => (
+                    <button
+                      key={tab}
+                      className={`px-4 py-2 text-sm font-medium transition-all rounded-lg ${
+                        index === 0
+                          ? 'text-white bg-gray-700/80 shadow-sm'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -463,5 +459,5 @@ export default function EventDetailPage({ params }: PageProps) {
         {/* Event Summary Sidebar */}
       </div>
     </div>
-  )
+  );
 }

@@ -20,11 +20,11 @@ export const events = pgTable('events', {
   ticketsSold: integer('tickets_sold').default(0),
   totalRevenue: integer('total_revenue').default(0),
   uniqueAttendees: integer('unique_attendees').default(0),
-  imageUrl: varchar('image_url', { length: 500 }),
-  logoUrl: varchar('logo_url', { length: 500 }),
+  imageUrl: text('image_url'),
+  logoUrl: text('logo_url'),
   policy: varchar('policy', { length: 255 }),
   organizer: varchar('organizer', { length: 255 }),
-  organizerLogo: varchar('organizer_logo', { length: 500 }),
+  organizerLogo: text('organizer_logo'),
   teams: jsonb('teams'), // Array of team objects
   tags: jsonb('tags'), // Array of tag strings
   timezone: varchar('timezone', { length: 100 }).default('GMT-6'),

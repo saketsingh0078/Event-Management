@@ -1,16 +1,15 @@
-'use client'
+'use client';
 
-import { usePathname } from 'next/navigation'
-import Image from 'next/image'
+import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export const Navbar = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter();
 
-  // Get the current page name for display
-  const getPageName = () => {
-    if (pathname === '/events') return 'Events'
-    return 'Events' // Default
-  }
+  // Check if we're on an event details page
+  const isEventDetailsPage =
+    pathname.startsWith('/events/') && pathname !== '/events';
 
   return (
     <nav
@@ -26,7 +25,20 @@ export const Navbar = () => {
           <div className="flex items-center">
             <h1 className="text-gray-300 text-base font-normal">
               <span className="text-[#A4A7AA]">Event Management / </span>
-              <span className="text-white">{getPageName()}</span>
+              {isEventDetailsPage ? (
+                <>
+                  <button
+                    onClick={() => router.push('/events')}
+                    className="text-white hover:text-blue-400 transition-colors cursor-pointer"
+                  >
+                    Event
+                  </button>
+                  <span className="text-[#A4A7AA]"> / </span>
+                  <span className="text-white">Event Details</span>
+                </>
+              ) : (
+                <span className="text-white">Events</span>
+              )}
             </h1>
           </div>
 
@@ -72,5 +84,5 @@ export const Navbar = () => {
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};

@@ -63,7 +63,9 @@ export async function getAllEvents(
   }
 
   if (filters?.endDate) {
-    conditions.push(lte(events.endDate, new Date(filters.endDate)))
+    // Filter events that start on or before the end date
+    // This ensures we get events that start within the date range
+    conditions.push(lte(events.startDate, new Date(filters.endDate)))
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined

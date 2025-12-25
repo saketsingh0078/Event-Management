@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   useReactTable,
@@ -6,22 +6,22 @@ import {
   getPaginationRowModel,
   flexRender,
   type ColumnDef,
-} from '@tanstack/react-table'
-import { ReactNode } from 'react'
+} from '@tanstack/react-table';
+import { ReactNode } from 'react';
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  isLoading?: boolean
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  isLoading?: boolean;
   pagination?: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-  onPageChange?: (page: number) => void
-  onRowClick?: (row: TData) => void
-  renderHeaderActions?: () => ReactNode
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  onPageChange?: (page: number) => void;
+  onRowClick?: (row: TData) => void;
+  renderHeaderActions?: () => ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -48,29 +48,19 @@ export function DataTable<TData, TValue>({
           }
         : undefined,
     },
-  })
+  });
 
-  const currentPage = pagination?.page ?? 1
-  const totalPages = pagination?.totalPages ?? 1
+  const currentPage = pagination?.page ?? 1;
+  const totalPages = pagination?.totalPages ?? 1;
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages && onPageChange) {
-      onPageChange(newPage)
+      onPageChange(newPage);
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-gray-400">Loading...</div>
-        </div>
-      </div>
-    )
-  }
+  };
 
   return (
-    <div className="w-full">
+    <div className="w-full border border-[#343A44] rounded-lg p-8">
       {/* Header Actions */}
       {renderHeaderActions && (
         <div className="mb-6">{renderHeaderActions()}</div>
@@ -103,19 +93,41 @@ export function DataTable<TData, TValue>({
               ))}
             </thead>
             <tbody className="divide-y divide-[#343A44]">
-              {table.getRowModel().rows?.length ? (
+              {isLoading ? (
+                // Shimmer loading rows
+                Array.from({ length: 5 }).map((_, rowIndex) => (
+                  <tr key={`shimmer-${rowIndex}`}>
+                    {columns.map((_, colIndex) => (
+                      <td
+                        key={`shimmer-${rowIndex}-${colIndex}`}
+                        className="px-4 py-3 whitespace-nowrap"
+                      >
+                        <div className="h-4 rounded animate-shimmer"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                // Actual data rows
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={`hover:bg-gray-800/30 transition-colors ${
-                      onRowClick ? 'cursor-pointer' : ''
-                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRowClick?.(row.original);
+                    }}
+                    className={`hover:bg-gray-800/30 transition-colors cursor-pointer`}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-white"
+                        className="px-4 py-3 whitespace-nowrap text-sm text-white"
+                        onClick={(e) => {
+                          // Stop propagation for actions column to prevent row click
+                          if (cell.column.id === 'actions') {
+                            e.stopPropagation();
+                          }
+                        }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -126,6 +138,7 @@ export function DataTable<TData, TValue>({
                   </tr>
                 ))
               ) : (
+                // No results
                 <tr>
                   <td
                     colSpan={columns.length}
@@ -142,7 +155,7 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       {pagination && totalPages > 0 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
+        <div className="flex gap-2 mt-6">
           {/* Previous Button */}
           <button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -169,15 +182,15 @@ export function DataTable<TData, TValue>({
           {/* Page Numbers Container */}
           <div className="flex items-center gap-1 px-2 py-1 rounded-lg border border-[#343A44] bg-gray-800/50">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum: number
+              let pageNum: number;
               if (totalPages <= 5) {
-                pageNum = i + 1
+                pageNum = i + 1;
               } else if (currentPage <= 3) {
-                pageNum = i + 1
+                pageNum = i + 1;
               } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i
+                pageNum = totalPages - 4 + i;
               } else {
-                pageNum = currentPage - 2 + i
+                pageNum = currentPage - 2 + i;
               }
 
               return (
@@ -192,7 +205,7 @@ export function DataTable<TData, TValue>({
                 >
                   {pageNum}
                 </button>
-              )
+              );
             })}
           </div>
 
@@ -221,5 +234,5 @@ export function DataTable<TData, TValue>({
         </div>
       )}
     </div>
-  )
+  );
 }
