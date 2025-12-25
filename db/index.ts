@@ -1,10 +1,10 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle } from 'drizzle-orm/node-postgres'
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
 let connection: Pool | null = null;
-let dbInstance: PostgresJsDatabase<typeof schema> | null = null;
+let dbInstance: NodePgDatabase<typeof schema> | null = null;
 
 export function getDb() {
   const connectionString = process.env.DATABASE_URL || "";
@@ -16,7 +16,6 @@ export function getDb() {
   if (!connection) {
     let parsedUrl: URL | null = null;
     try {
-
       const urlString = connectionString.startsWith("postgres://") || connectionString.startsWith("postgresql://")
         ? connectionString 
         : `postgresql://${connectionString}`;
@@ -32,7 +31,7 @@ export function getDb() {
         idleTimeoutMillis: 30000, 
         connectionTimeoutMillis: 10000, 
       });
-      dbInstance = drizzle(connection as unknown as string, { schema });
+      dbInstance = drizzle(connection, { schema });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const hostInfo = parsedUrl ? ` (host: ${parsedUrl.hostname}, port: ${parsedUrl.port || 5432})` : "";
